@@ -1,5 +1,5 @@
 ## 💩 Poo Slide™ - $19.84
-image:./images/pooslide.png
+image:../images/pooslide.png
 
 Are you sick of getting splash back when you poop? Try the poo slide! A great gift for the kids!
 
