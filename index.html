@@ -102,7 +102,6 @@
         }
 
         .sparkle::before, .sparkle::after {
-            content: "";
             position: absolute;
             margin: auto;
             background: white;
@@ -150,33 +149,6 @@
         }
 
         /* ========== MUSIC CONTROLS ========== */
-        #music-controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-        }
-
-        #toggleMusic {
-            background-color: #ff00ff;
-            color: white;
-            font-size: 1.1em;
-            padding: 12px 20px;
-            border: 3px dashed #fff;
-            border-radius: 15px;
-            box-shadow: 0 0 15px #ff00ff;
-            cursor: pointer;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            transition: transform 0.2s, background-color 0.3s;
-        }
-
-        #toggleMusic:hover {
-            background-color: #ff66ff;
-        }
-
-        #toggleMusic.sketchy-glitch {
-            animation: sketchyShake 0.6s;
-        }
 
         @keyframes sketchyShake {
             0%, 100% { transform: rotate(0deg) scale(1); }
@@ -355,6 +327,7 @@
                 -1px  1px 0 #000,
                 1px  1px 0 #000;
             font-size: 1.1rem;
+            font-family: 'Comic Sans MS', cursive;
             line-height: 1.6;
         }
 
@@ -584,14 +557,34 @@
         }
 
 
-        /* @keyframes skele-dance {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(5deg); }
-            50% { transform: rotate(-5deg); }
-            75% { transform: rotate(5deg); }
-            100% { transform: rotate(0deg); }
-        } */
+        @keyframes explode {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3) rotate(720deg);
+                opacity: 0;
+            }
+        }
 
+        .explode-away {
+            animation: explode 0.2s ease-out forwards;
+        }
+
+        #easterEggPopup {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px;
+            background-color: #ff00bf;
+            color: white;
+            font-size: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+        }
 
     </style>
 </head>
@@ -601,7 +594,7 @@
 
     <h1></h1>
 
-    <img src="images/storeicon.png" alt="Store Icon" style="width: 350px; margin-top: 5px;" />
+    <img id="storeIcon" src="images/storeicon.png" alt="Store Icon" style="width: 350px; margin-top: 5px;" />
 
     <section id="store" class="store-grid"></section>
 
@@ -618,6 +611,11 @@
     <div id="sketchyOverlay">🌀 JAMZ MODE™ ACTIVATED 🌀</div>
     <div id="you-did-it" class="you-did-it hidden"></div>
     <div id="sketchyPopupContainer"></div>
+
+    <div id="easterEggPopup" class="hidden">
+        <img src="images/wutgif.gif"/>
+        <p id="easterEggMessage">You're about to discover the hidden sketchy magic! 🎉</p>
+    </div>
     
     <div id="rickrollPopup" class="popup-overlay hidden">
         <div class="popup-content">
@@ -643,7 +641,7 @@
     <audio id="outOfStockSound2" src="metal-pipe-clang.mp3" preload="auto"></audio>
     <audio id="glitchSound" src="mlg-airhorn.mp3" preload="auto"></audio>
     <audio id="backgroundMusic" src="16sept_dynamics_nav_2016_training_los_angeles_california_september_2016.mp3" autoplay muted loop></audio>
-
+    <audio id="shopSound" src="wetfart.mp3"></audio>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
@@ -735,22 +733,48 @@
             const ad = document.createElement('div');
             ad.classList.add('sketchy-ad');
 
+            // Set random position
+            const top = Math.floor(Math.random() * 80);
+            const left = Math.floor(Math.random() * 80);
+            ad.style.top = `${top}vh`;
+            ad.style.left = `${left}vw`;
+
             ad.innerHTML = `
-                <img src="https://media.giphy.com/media/3ohc1bJZJ4Zp6AKW8s/giphy.gif" alt="BUY THIS">
-                <p style="text-align: center; font-weight: bold;">🔥 BUY NOW OR CRY LATER 🔥</p>
+                <div class="rotating-wrapper">
+                    <img src="https://media.giphy.com/media/3ohc1bJZJ4Zp6AKW8s/giphy.gif" alt="BUY THIS">
+                    <p>🔥 BUY NOW OR CRY LATER 🔥</p>
+                </div>
             `;
+
+            // Add click event
+            ad.addEventListener("click", () => {
+                // Spawn chaos popup
+                createSketchyPopup();
+
+                // Sparkle explosion
+                spawnSparkles(50, ad.offsetLeft + 75, ad.offsetTop + 75);
+
+                // Add explosion style
+                ad.classList.add("explode-away");
+
+                // Remove it after animation
+                setTimeout(() => ad.remove(), 1000);
+            });
 
             document.body.appendChild(ad);
 
-            setTimeout(() => ad.remove(), 15000); // Remove after 15 seconds
+            // Auto-remove after 15s if not clicked
+            setTimeout(() => {
+                if (ad.parentNode) ad.remove();
+            }, 15000);
         }
 
         // Optionally trigger only in JAMZmode
         setInterval(() => {
-            if (jamzActive && Math.random() < 0.3) {
+            if (jamzActive && Math.random() < 0.6) {
                 showRotatingAd();
             }
-        }, 10000);
+        }, 1000);
 
 
         // Base popup data
@@ -761,7 +785,7 @@
             },
             {
                 title: '🎉 CONGRATULATIONS! 🎉',
-                body: 'You are our 1,000,000th  visitor. Claim your free glitter pony.',
+                body: 'You are our 1,000,000th  visitor. <a href="http://dickinahotdogbun.com" target="_blank">Claim your free glitter pony.</a>',
             },
             {
                 title: 'SketchGuard™ Alert',
@@ -772,8 +796,8 @@
                 body: "You're a teapot full of glitter. *Tips hat slowly*",
             },
             {
-                title: '💘  Singles 💘',
-                body: 'Corndog singles near you are jamming to chaos. Join now!',
+                title: '💘 Singles 💘',
+                body: '<a href="http://dickinahotdogbun.com" target="_blank">Corndog singles near you are jamming to into their swimsuits. Join now!</a>',
             },
             {
                 title: 'Jumpscare!',
@@ -947,6 +971,14 @@
                 title: '🐔 Chicken Override',
                 body: '<img src="https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif" width="120"><br>They’ve pecked the firewall again.',
             },
+            {
+                title: 'Get rikd son',
+                body: '<img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGZsOHNmMDIzNXpramM4MG5wbDcyMTFzam1jNWdqajA3NDF0NjI5NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g7GKcSzwQfugw/giphy.gif" width="120"/>'
+            },
+            {
+                title: 'Hot hotdogs in your area',
+                body: '<a href="http://dickinahotdogbun.com" target="_blank">NEW MESSAGE</a>'
+            }
         ];
 
         function createSketchyPopup() {
@@ -1000,13 +1032,27 @@
                 }
             }, 1000);
 
-            popup.querySelector('.sketchy-close').addEventListener('click', () => {
-                createSketchyPopup();
-                createSketchyPopup();
-                popup.remove();
-            });
+            if (jamzActive) {
+                popup.querySelector('.sketchy-close').addEventListener('click', () => {
+                    createSketchyPopup();
+                    createSketchyPopup();
+                    popup.remove();
+                });
+            } else 
+            {
+                popup.querySelector('.sketchy-close').addEventListener('click', () => {
+                    popup.remove();
+                });
+            }
         }
 
+        function removeAllSketchyPopups() {
+            const allPopups = document.querySelectorAll('.sketchy-popup');
+            allPopups.forEach(p => p.remove());
+
+            const spinningPopups = document.querySelectorAll('.sketchy-ad');
+            spinningPopups.forEach(p => p.remove());
+        }
     
         setInterval(() => {
             if (jamzActive && Math.random() < 0.25) {
@@ -1037,7 +1083,48 @@
             const toggleBtn = document.getElementById("logoButton");
             const overlay = document.getElementById("sketchyOverlay");
             const glitchSound = document.getElementById("glitchSound");
+
+            const storeIcon = document.getElementById("storeIcon");
+            const easterEggPopup = document.getElementById("easterEggPopup");
+            const easterEggMessage = document.getElementById("easterEggMessage");
             
+            const easterEggMessages = [
+                "The store is always watching... 👀",
+                "Stop clicking everything.",
+                "This is your reward for being ridiculously curious! 🏆",
+                "Why did you click that?",
+                "You’re in deep now...",
+                "This is not the path you were meant to take. 💀",
+                "There’s no going back.",
+                "Do you hear the whispers in the dark? 👂",
+                "Congratulations! You’ve unlocked exisential dread! 🎉",
+                "You clicked. You summoned. Now face the consequences. 🔥",
+                "Was this fate or curiosity? ✨",
+                "The more you click, the deeper you go... 🕳️",
+                "Everything you see here... it’s not real. 💭",
+            ];
+
+            storeIcon.addEventListener("click", () => {
+                // Randomize the Easter Egg message
+                easterEggMessage.textContent = easterEggMessages[Math.floor(Math.random() * easterEggMessages.length)];
+                // Display the popup
+                easterEggPopup.classList.remove("hidden");
+                var sound = document.getElementById("shopSound");
+
+                if (sound) {
+                    sound.currentTime = 0;
+                    sound.play();
+                }
+
+                // Remove the cat gif after 5 seconds
+                setTimeout(() => easterEggPopup.classList.add("hidden"), 1000);
+            });
+
+            closeEasterEgg.addEventListener("click", () => {
+                // Close the Easter egg popup
+                easterEggPopup.classList.add("hidden");
+            });
+
             const skeletons = document.querySelectorAll('.dancing-skeleton');
             skeletons.forEach((skeleton, index) => {
                 const screenWidth = window.innerWidth;
@@ -1067,6 +1154,7 @@
                     toggleBtn.textContent = "🎛 Activate JAMZ Mode";
                     skeletons.forEach(skeleton => skeleton.classList.add("hidden"));
                     jamzActive = false;
+                    removeAllSketchyPopups();
                 }
             }
 
