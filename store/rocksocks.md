@@ -1,5 +1,5 @@
 ## 🧦 Rock Socks™ - $9.11
-image:../images/rocksocks.png
+image:./images/rocksocks.png
 
 Tired of comfortable footware? Rock Socks are here! Each pair is lovingly filled to the perfect amount of rocks, these socks are sure to make you feel less comfortable than ever before.
 

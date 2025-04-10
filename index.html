@@ -686,7 +686,7 @@
     
                             if (imageUrl) {
                                 const img = document.createElement('img');
-                                img.src = imageUrl;
+                                img.src = new URL(imageUrl, window.location.href).href;
                                 img.alt = 'Product image';
                                 img.className = 'item-image';
                                 itemDiv.appendChild(img);
