@@ -8,7 +8,7 @@ serverPort = 8080
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/":
-            self.path = "/main.html"  # Default to main.html for the root path
+            self.path = "/index.html"  # Default to main.html for the root path
         
         try:
             # Construct the full file path
